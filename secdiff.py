@@ -143,10 +143,23 @@ class Renderer:
         halfwidth = curses.COLS // 2
         self.ltitle = curses.newwin(1, halfwidth, 0, 0)
         self.rtitle = curses.newwin(1, halfwidth, 0, halfwidth)
-        self.lwin = curses.newwin(curses.LINES, halfwidth, 2, 0)
-        self.rwin = curses.newwin(curses.LINES, halfwidth, 2, halfwidth)
+        self.lwin = curses.newwin(curses.LINES - 2, halfwidth, 2, 0)
+        self.rwin = curses.newwin(curses.LINES - 2, halfwidth, 2, halfwidth)
         curses.init_pair(1, curses.COLOR_RED, -1)
         curses.init_pair(2, curses.COLOR_GREEN, -1)
+
+    def resize_windows(self):
+        self.ltitle.erase()
+        self.rtitle.erase()
+        self.lwin.erase()
+        self.rwin.erase()
+        halfwidth = curses.COLS // 2
+        self.ltitle.resize(1, halfwidth)
+        self.rtitle.resize(1, halfwidth)
+        self.lwin.resize(curses.LINES - 2, halfwidth)
+        self.rwin.resize(curses.LINES - 2, halfwidth)
+        self.rtitle.mvwin(0, halfwidth)
+        self.rwin.mvwin(2, halfwidth)
 
     def render_title(self, win, text):
         win.clear()
@@ -171,6 +184,7 @@ class Renderer:
 
     def render(self, state):
         """Render state to the windows for this renderer"""
+        self.resize_windows()
         ltitle = state.sections[state.left][0]
         rtitle = state.sections[state.right][0]
         (lsec, rsec) = state.make_diff()
@@ -203,7 +217,6 @@ def run(scr, state):
     scr.keypad(True)
     scr.refresh()
 
-
     renderer = Renderer()
 
     while True:
@@ -220,6 +233,8 @@ def run(scr, state):
             state.down()
         elif c == ord("k"):
             state.up()
+        elif c == curses.KEY_RESIZE:
+            curses.update_lines_cols()
 
 
 def main():
