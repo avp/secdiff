@@ -171,15 +171,20 @@ class Renderer:
         """
         win.clear()
         row = 0
+        max_y, max_x = win.getmaxyx()  # Get the dimensions of the window
         for i in range(top, len(file)):
+            if row >= max_y:  # Check if row has exceeded the window size
+                break
             line = file[i]
+            if len(line) >= max_x:  # Truncate or wrap here
+                line = line[:max_x-1]
             if line[0] == "-":
                 color = curses.color_pair(1)
             elif line[0] == "+":
                 color = curses.color_pair(2)
             else:
                 color = curses.A_DIM
-            win.addstr(row, 0, file[i], color)
+            win.addstr(row, 0, line, color)
             row += 1
 
     def render(self, state):
@@ -235,6 +240,7 @@ def run(scr, state):
             state.up()
         elif c == curses.KEY_RESIZE:
             curses.update_lines_cols()
+            renderer = Renderer()
 
 
 def main():
