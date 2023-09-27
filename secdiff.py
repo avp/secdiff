@@ -188,9 +188,9 @@ class Renderer:
         ltitle = state.sections[state.left][0]
         rtitle = state.sections[state.right][0]
         (lsec, rsec) = state.make_diff()
-        self.render_title(self.ltitle, ltitle)
+        self.render_title(self.ltitle, "[{}] {}".format(state.left, ltitle))
         self.render_section(self.lwin, lsec, state.top)
-        self.render_title(self.rtitle, rtitle)
+        self.render_title(self.rtitle, "[{}] {}".format(state.right, rtitle))
         self.render_section(self.rwin, rsec, state.top)
         self.ltitle.refresh()
         self.rtitle.refresh()
