@@ -230,13 +230,13 @@ def run(scr, state):
         if c == ord("q"):
             exit(scr)
             break
-        elif c == ord("l"):
+        elif c == ord("l") or c == curses.KEY_RIGHT:
             state.next()
-        elif c == ord("h"):
+        elif c == ord("h") or c == curses.KEY_LEFT:
             state.prev()
-        elif c == ord("j"):
+        elif c == ord("j") or c == curses.KEY_DOWN:
             state.down()
-        elif c == ord("k"):
+        elif c == ord("k") or c == curses.KEY_UP:
             state.up()
         elif c == curses.KEY_RESIZE:
             curses.update_lines_cols()
