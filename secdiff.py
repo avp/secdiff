@@ -19,7 +19,6 @@ Keybindings:
 
 import argparse
 import curses
-import re
 import sys
 from difflib import Differ
 
@@ -62,10 +61,6 @@ class State:
 
     def __init__(self, fulltext, separator):
         self.sections = split_text(fulltext, separator)
-        if len(self.sections) < 2:
-            exit(scr)
-            print("Failed to find at least 2 sections", file=sys.stderr)
-            return
         self.top = 0
         self.left = 0
         self.right = 1
@@ -244,6 +239,9 @@ def main():
         args = parse_args()
         with open(args.filename, "r") as f:
             state = State(f.read(), args.separator)
+        if len(state.sections) < 2:
+            print("Failed to find at least 2 sections", file=sys.stderr)
+            return
         scr = curses.initscr()
         run(scr, state)
     except:
