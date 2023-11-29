@@ -121,6 +121,7 @@ class State:
         )
         for line in result:
             if line[0] == " ":
+                # Same line on both sides.
                 while len(left) < len(right):
                     left.append(" ")
                 while len(right) < len(left):
@@ -128,8 +129,10 @@ class State:
                 left.append(line)
                 right.append(line)
             elif line[0] == "+":
+                # Added on the right.
                 right.append(line)
             elif line[0] == "-":
+                # Added on the left.
                 left.append(line)
         return (left, right)
 
@@ -148,19 +151,6 @@ class Renderer:
         curses.init_pair(1, curses.COLOR_RED, -1)
         curses.init_pair(2, curses.COLOR_GREEN, -1)
 
-    def resize_windows(self):
-        self.ltitle.erase()
-        self.rtitle.erase()
-        self.lwin.erase()
-        self.rwin.erase()
-        halfwidth = curses.COLS // 2
-        self.ltitle.resize(1, halfwidth)
-        self.rtitle.resize(1, halfwidth)
-        self.lwin.resize(curses.LINES - 2, halfwidth)
-        self.rwin.resize(curses.LINES - 2, halfwidth)
-        self.rtitle.mvwin(0, halfwidth)
-        self.rwin.mvwin(2, halfwidth)
-
     def render_title(self, win, text):
         win.clear()
         win.addstr(0, 0, text, curses.A_BOLD)
@@ -177,7 +167,7 @@ class Renderer:
                 break
             line = file[i]
             if len(line) >= max_x:  # Truncate or wrap here
-                line = line[:max_x-1]
+                line = line[: max_x - 1]
             if line[0] == "-":
                 color = curses.color_pair(1)
             elif line[0] == "+":
@@ -189,7 +179,6 @@ class Renderer:
 
     def render(self, state):
         """Render state to the windows for this renderer"""
-        self.resize_windows()
         ltitle = state.sections[state.left][0]
         rtitle = state.sections[state.right][0]
         (lsec, rsec) = state.make_diff()
@@ -228,8 +217,7 @@ def run(scr, state):
         renderer.render(state)
         c = scr.getch()
         if c == ord("q"):
-            exit(scr)
-            break
+            return
         elif c == ord("l") or c == curses.KEY_RIGHT:
             state.next()
         elif c == ord("h") or c == curses.KEY_LEFT:
@@ -240,7 +228,11 @@ def run(scr, state):
             state.up()
         elif c == curses.KEY_RESIZE:
             curses.update_lines_cols()
+            # Make a new Renderer.
+            # The old windows are freed by the GC.
             renderer = Renderer()
+            renderer.render(state)
+            scr.refresh()
 
 
 def main():
@@ -255,9 +247,10 @@ def main():
         scr = curses.initscr()
         run(scr, state)
     except:
+        raise
+    finally:
         if scr:
             exit(scr)
-        raise
 
 
 if __name__ == "__main__":
